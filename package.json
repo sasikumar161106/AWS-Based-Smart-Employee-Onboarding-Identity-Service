@@ -1,0 +1,19 @@
+{
+  "name": "employee-onboarding-backend",
+  "version": "1.0.0",
+  "description": "Backend API & Employee Data for Smart Employee Onboarding",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Sasi",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-sfn": "^3.0.0",
+    "@aws-sdk/util-dynamodb": "^3.0.0",
+    "uuid": "^9.0.0"
+  }
+}
