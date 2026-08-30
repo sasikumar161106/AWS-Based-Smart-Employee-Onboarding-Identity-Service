@@ -45,6 +45,7 @@ function OnboardingPage() {
     try {
       const response = await submitEmployee(formData);
       setEmployeeId(response.employee_id);
+      localStorage.setItem("employee_id", response.employee_id);
       setFormData(initialForm);
     } catch (requestError) {
       setError(requestError.message);
@@ -74,13 +75,35 @@ function OnboardingPage() {
             <strong>{employeeId}</strong>
           </div>
 
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() => setEmployeeId("")}
-          >
-            Add another employee
-          </button>
+         <div className="success-actions">
+  <button
+    className="secondary-button"
+    type="button"
+    onClick={() => setEmployeeId("")}
+  >
+    Add another employee
+  </button>
+
+  <button
+    className="secondary-button"
+    type="button"
+    onClick={() => {
+      window.location.hash = "/documents";
+    }}
+  >
+    Upload documents
+  </button>
+
+  <button
+    className="primary-button"
+    type="button"
+    onClick={() => {
+      window.location.hash = "/progress";
+    }}
+  >
+    Track progress
+  </button>
+</div>
         </section>
       </main>
     );
