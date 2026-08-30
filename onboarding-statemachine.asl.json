@@ -1,0 +1,182 @@
+{
+  "Comment": "Smart Employee Onboarding - 4 stage workflow with 24h reminder loop per stage",
+  "StartAt": "StartDocumentCollection",
+  "States": {
+
+    "StartDocumentCollection": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "DOCUMENT_COLLECTION"
+      },
+      "ResultPath": null,
+      "Next": "CheckDocumentCollection"
+    },
+    "CheckDocumentCollection": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "DOCUMENT_COLLECTION"
+      },
+      "ResultPath": "$.stageCheck",
+      "Next": "IsDocumentCollectionComplete"
+    },
+    "IsDocumentCollectionComplete": {
+      "Type": "Choice",
+      "Choices": [
+        { "Variable": "$.stageCheck.isComplete", "BooleanEquals": true, "Next": "StartITProvisioning" }
+      ],
+      "Default": "WaitDocumentCollection"
+    },
+    "WaitDocumentCollection": {
+      "Type": "Wait",
+      "Seconds": 86400,
+      "Next": "RemindDocumentCollection"
+    },
+    "RemindDocumentCollection": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "DOCUMENT_COLLECTION"
+      },
+      "ResultPath": null,
+      "Next": "CheckDocumentCollection"
+    },
+
+    "StartITProvisioning": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "IT_PROVISIONING"
+      },
+      "ResultPath": null,
+      "Next": "CheckITProvisioning"
+    },
+    "CheckITProvisioning": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "IT_PROVISIONING"
+      },
+      "ResultPath": "$.stageCheck",
+      "Next": "IsITProvisioningComplete"
+    },
+    "IsITProvisioningComplete": {
+      "Type": "Choice",
+      "Choices": [
+        { "Variable": "$.stageCheck.isComplete", "BooleanEquals": true, "Next": "StartPolicySignoff" }
+      ],
+      "Default": "WaitITProvisioning"
+    },
+    "WaitITProvisioning": {
+      "Type": "Wait",
+      "Seconds": 86400,
+      "Next": "RemindITProvisioning"
+    },
+    "RemindITProvisioning": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "IT_PROVISIONING"
+      },
+      "ResultPath": null,
+      "Next": "CheckITProvisioning"
+    },
+
+    "StartPolicySignoff": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "POLICY_SIGNOFF"
+      },
+      "ResultPath": null,
+      "Next": "CheckPolicySignoff"
+    },
+    "CheckPolicySignoff": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "POLICY_SIGNOFF"
+      },
+      "ResultPath": "$.stageCheck",
+      "Next": "IsPolicySignoffComplete"
+    },
+    "IsPolicySignoffComplete": {
+      "Type": "Choice",
+      "Choices": [
+        { "Variable": "$.stageCheck.isComplete", "BooleanEquals": true, "Next": "StartManagerIntro" }
+      ],
+      "Default": "WaitPolicySignoff"
+    },
+    "WaitPolicySignoff": {
+      "Type": "Wait",
+      "Seconds": 86400,
+      "Next": "RemindPolicySignoff"
+    },
+    "RemindPolicySignoff": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "POLICY_SIGNOFF"
+      },
+      "ResultPath": null,
+      "Next": "CheckPolicySignoff"
+    },
+
+    "StartManagerIntro": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "MANAGER_INTRO"
+      },
+      "ResultPath": null,
+      "Next": "CheckManagerIntro"
+    },
+    "CheckManagerIntro": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "MANAGER_INTRO"
+      },
+      "ResultPath": "$.stageCheck",
+      "Next": "IsManagerIntroComplete"
+    },
+    "IsManagerIntroComplete": {
+      "Type": "Choice",
+      "Choices": [
+        { "Variable": "$.stageCheck.isComplete", "BooleanEquals": true, "Next": "OnboardingComplete" }
+      ],
+      "Default": "WaitManagerIntro"
+    },
+    "WaitManagerIntro": {
+      "Type": "Wait",
+      "Seconds": 86400,
+      "Next": "RemindManagerIntro"
+    },
+    "RemindManagerIntro": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage_name": "MANAGER_INTRO"
+      },
+      "ResultPath": null,
+      "Next": "CheckManagerIntro"
+    },
+
+    "OnboardingComplete": {
+      "Type": "Succeed"
+    }
+  }
+}
