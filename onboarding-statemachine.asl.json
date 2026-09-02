@@ -5,7 +5,7 @@
 
     "StartDocumentCollection": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:StartStage",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "DOCUMENT_COLLECTION"
@@ -15,7 +15,7 @@
     },
     "CheckDocumentCollection": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:CheckStageStatus",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "DOCUMENT_COLLECTION"
@@ -37,7 +37,7 @@
     },
     "RemindDocumentCollection": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:ReminderDispatcher",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "DOCUMENT_COLLECTION"
@@ -48,7 +48,7 @@
 
     "StartITProvisioning": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:StartStage",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "IT_PROVISIONING"
@@ -58,7 +58,7 @@
     },
     "CheckITProvisioning": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:CheckStageStatus",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "IT_PROVISIONING"
@@ -80,7 +80,7 @@
     },
     "RemindITProvisioning": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:ReminderDispatcher",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "IT_PROVISIONING"
@@ -91,7 +91,7 @@
 
     "StartPolicySignoff": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:StartStage",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "POLICY_SIGNOFF"
@@ -101,7 +101,7 @@
     },
     "CheckPolicySignoff": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:CheckStageStatus",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "POLICY_SIGNOFF"
@@ -123,7 +123,7 @@
     },
     "RemindPolicySignoff": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:ReminderDispatcher",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "POLICY_SIGNOFF"
@@ -134,7 +134,7 @@
 
     "StartManagerIntro": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:StartStage",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:StartStage",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "MANAGER_INTRO"
@@ -144,7 +144,7 @@
     },
     "CheckManagerIntro": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:CheckStageStatus",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:CheckStageStatus",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "MANAGER_INTRO"
@@ -166,7 +166,7 @@
     },
     "RemindManagerIntro": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:ap-south-1:ACCOUNT_ID:function:ReminderDispatcher",
+      "Resource": "arn:aws:lambda:ap-south-1:xxxxxxxxx:function:ReminderDispatcher",
       "Parameters": {
         "employee_id.$": "$.employee_id",
         "stage_name": "MANAGER_INTRO"
