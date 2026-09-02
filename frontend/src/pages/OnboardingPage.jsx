@@ -66,8 +66,7 @@ function OnboardingPage() {
           <h1>Welcome aboard!</h1>
 
           <p className="success-message">
-            Your employee profile has been created successfully. Save your
-            Employee ID to track the onboarding journey.
+            Your employee profile has been created in DynamoDB and your account has been provisioned in <strong>Amazon Cognito</strong>! You can now log in anytime to track progress and upload documents.
           </p>
 
           <div className="employee-id-box">
@@ -98,10 +97,10 @@ function OnboardingPage() {
     className="primary-button"
     type="button"
     onClick={() => {
-      window.location.hash = "/progress";
+      window.location.hash = "/login";
     }}
   >
-    Track progress
+    Sign In with Cognito
   </button>
 </div>
         </section>
@@ -154,6 +153,27 @@ function OnboardingPage() {
       </section>
 
       <section className="form-section">
+        <div className="cognito-login-banner" style={{
+          background: "rgba(37, 99, 235, 0.08)",
+          border: "1px solid rgba(37, 99, 235, 0.2)",
+          borderRadius: "12px",
+          padding: "12px 18px",
+          marginBottom: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: "0.9rem"
+        }}>
+          <span>Already registered your profile?</span>
+          <a href="#/login" style={{
+            color: "var(--primary)",
+            fontWeight: "700",
+            textDecoration: "none"
+          }}>
+            Sign In with Cognito &rarr;
+          </a>
+        </div>
+
         <div className="form-heading">
           <p className="eyebrow">Step 1 of 3</p>
           <h2>Employee information</h2>
