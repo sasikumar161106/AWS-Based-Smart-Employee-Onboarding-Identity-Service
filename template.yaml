@@ -12,8 +12,66 @@ Globals:
     Environment:
       Variables:
         TABLE_NAME: !Ref EmployeeOnboardingTable
+        USER_POOL_ID: !Ref EmployeeUserPool
+        EMPLOYEES_GROUP: Employees
 
 Resources:
+  # Amazon Cognito User Pool (Identity Spine - Virajith)
+  EmployeeUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: SmartEmployeeUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+        - Name: name
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+        - Name: employee_id
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+        - Name: role
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+        - Name: department
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+
+  EmployeeUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: SmartEmployeeWebClient
+      UserPoolId: !Ref EmployeeUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+
+  EmployeesGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: Employees
+      Description: Group for onboarding employees and new hires
+      UserPoolId: !Ref EmployeeUserPool
+
+  HRAdminsGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: HRAdmins
+      Description: Group for HR Administrators with dashboard access
+      UserPoolId: !Ref EmployeeUserPool
+
   # DynamoDB Table
   EmployeeOnboardingTable:
     Type: AWS::DynamoDB::Table
@@ -57,11 +115,17 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/createEmployee.handler
-      Description: Creates a new employee record and triggers provisioning
+      Description: Creates a new employee record and triggers Cognito provisioning
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EmployeeOnboardingTable
-        # Add permissions for Cognito and Step Functions here later if needed
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:AdminAddUserToGroup
+                - cognito-idp:AdminGetUser
+              Resource: !GetAtt EmployeeUserPool.Arn
       Events:
         SubmitApi:
           Type: Api
@@ -108,3 +172,10 @@ Outputs:
   ApiEndpoint:
     Description: "API Gateway endpoint URL for Prod stage"
     Value: !Sub "https://${OnboardingAPI}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+  UserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref EmployeeUserPool
+  UserPoolClientId:
+    Description: "Cognito User Pool App Client ID"
+    Value: !Ref EmployeeUserPoolClient
+

@@ -9,14 +9,25 @@ const {
     StartExecutionCommand
 } = require('@aws-sdk/client-sfn');
 
+const {
+    CognitoIdentityProviderClient,
+    AdminCreateUserCommand,
+    AdminAddUserToGroupCommand,
+    AdminGetUserCommand
+} = require('@aws-sdk/client-cognito-identity-provider');
+
 const { marshall } = require('@aws-sdk/util-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 
 const dynamodb = new DynamoDBClient({});
 const sfn = new SFNClient({});
+const cognito = new CognitoIdentityProviderClient({});
 
 const TABLE_NAME = process.env.TABLE_NAME;
 const STATE_MACHINE_ARN = process.env.STATE_MACHINE_ARN;
+const USER_POOL_ID = process.env.USER_POOL_ID;
+const EMPLOYEES_GROUP = process.env.EMPLOYEES_GROUP || 'Employees';
+
 
 exports.handler = async (event) => {
 
@@ -105,81 +116,132 @@ exports.handler = async (event) => {
 
 
         // =====================================================
-        // COGNITO
+        // COGNITO IDENTITY PROVISIONING (Virajith - Identity & Auth)
         // =====================================================
-        // Virajith should add the Cognito AdminCreateUser
-        // logic here.
-        //
-        // IMPORTANT:
-        // Step Functions should start ONLY AFTER Cognito
-        // provisioning succeeds.
-        //
-        // Example:
-        //
-        // const cognitoSub = await createCognitoUser(
-        //     body.email,
-        //     body.full_name
-        // );
-        //
-        // =====================================================
+        let cognitoSub = null;
 
+        if (USER_POOL_ID) {
+            console.log(`Provisioning Cognito account for ${body.email}...`);
 
-        // =====================================================
-        // STEP FUNCTIONS
-        // =====================================================
+            try {
+                const createUserParams = {
+                    UserPoolId: USER_POOL_ID,
+                    Username: body.email,
+                    UserAttributes: [
+                        { Name: 'email', Value: body.email },
+                        { Name: 'email_verified', Value: 'true' },
+                        { Name: 'name', Value: body.full_name }
+                    ],
+                    DesiredDeliveryMediums: ['EMAIL']
+                };
 
-        if (!STATE_MACHINE_ARN) {
+                const createUserResult = await cognito.send(
+                    new AdminCreateUserCommand(createUserParams)
+                );
 
-            throw new Error(
-                "STATE_MACHINE_ARN environment variable is not configured"
-            );
+                const subAttribute = createUserResult.User?.Attributes?.find(
+                    (attr) => attr.Name === 'sub'
+                );
+                cognitoSub = subAttribute ? subAttribute.Value : createUserResult.User?.Username;
+
+                console.log(`Successfully created Cognito user with sub: ${cognitoSub}`);
+            } catch (cognitoError) {
+                if (cognitoError.name === 'UsernameExistsException' || cognitoError.code === 'UsernameExistsException') {
+                    console.log(`User ${body.email} already exists in Cognito. Fetching existing account...`);
+                    try {
+                        const getUserResult = await cognito.send(
+                            new AdminGetUserCommand({
+                                UserPoolId: USER_POOL_ID,
+                                Username: body.email
+                            })
+                        );
+                        const subAttribute = getUserResult.UserAttributes?.find(
+                            (attr) => attr.Name === 'sub'
+                        );
+                        cognitoSub = subAttribute ? subAttribute.Value : getUserResult.Username;
+                    } catch (fetchError) {
+                        console.warn(`Could not fetch existing Cognito user:`, fetchError.message);
+                    }
+                } else {
+                    console.error(`Cognito user creation error:`, cognitoError);
+                }
+            }
+
+            // Add user to Employees group for role-based access control
+            try {
+                await cognito.send(
+                    new AdminAddUserToGroupCommand({
+                        UserPoolId: USER_POOL_ID,
+                        Username: body.email,
+                        GroupName: EMPLOYEES_GROUP
+                    })
+                );
+                console.log(`Added user ${body.email} to Cognito group '${EMPLOYEES_GROUP}'`);
+            } catch (groupError) {
+                console.warn(`Could not add user to group ${EMPLOYEES_GROUP}:`, groupError.message);
+            }
+
+            // Save cognito_sub into DynamoDB profile record
+            if (cognitoSub) {
+                await dynamodb.send(
+                    new UpdateItemCommand({
+                        TableName: TABLE_NAME,
+                        Key: marshall({
+                            employee_id: employeeId,
+                            sk: 'PROFILE'
+                        }),
+                        UpdateExpression: 'SET cognito_sub = :sub',
+                        ExpressionAttributeValues: marshall({
+                            ':sub': cognitoSub
+                        })
+                    })
+                );
+            }
+        } else {
+            console.warn("USER_POOL_ID environment variable is not configured. Skipping Cognito provisioning.");
         }
 
-        // Start onboarding workflow
-        const execution = await sfn.send(
-            new StartExecutionCommand({
+        // =====================================================
+        // STEP FUNCTIONS (Phase 2 Workflow Engine)
+        // =====================================================
+        let executionArn = null;
 
-                stateMachineArn:
-                    STATE_MACHINE_ARN,
-
-                // UUID makes execution name unique
-                name:
-                    `onboarding-${employeeId}`,
-
-                // This becomes Step Functions input
-                input:
-                    JSON.stringify({
-                        employee_id: employeeId
+        if (STATE_MACHINE_ARN) {
+            try {
+                // Start onboarding workflow
+                const execution = await sfn.send(
+                    new StartExecutionCommand({
+                        stateMachineArn: STATE_MACHINE_ARN,
+                        name: `onboarding-${employeeId}`,
+                        input: JSON.stringify({
+                            employee_id: employeeId
+                        })
                     })
-            })
-        );
+                );
 
-        console.log(
-            `Started onboarding workflow: ${execution.executionArn}`
-        );
+                executionArn = execution.executionArn;
+                console.log(`Started onboarding workflow: ${executionArn}`);
 
-
-        // Save Step Functions execution ARN
-        await dynamodb.send(
-            new UpdateItemCommand({
-
-                TableName: TABLE_NAME,
-
-                Key: marshall({
-                    employee_id: employeeId,
-                    sk: 'PROFILE'
-                }),
-
-                UpdateExpression:
-                    'SET execution_arn = :executionArn',
-
-                ExpressionAttributeValues:
-                    marshall({
-                        ':executionArn':
-                            execution.executionArn
+                // Save Step Functions execution ARN
+                await dynamodb.send(
+                    new UpdateItemCommand({
+                        TableName: TABLE_NAME,
+                        Key: marshall({
+                            employee_id: employeeId,
+                            sk: 'PROFILE'
+                        }),
+                        UpdateExpression: 'SET execution_arn = :executionArn',
+                        ExpressionAttributeValues: marshall({
+                            ':executionArn': executionArn
+                        })
                     })
-            })
-        );
+                );
+            } catch (sfnError) {
+                console.warn("Failed to start Step Functions workflow:", sfnError.message);
+            }
+        } else {
+            console.warn("STATE_MACHINE_ARN environment variable is not configured. Skipping Step Functions workflow.");
+        }
 
 
         // =====================================================
