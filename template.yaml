@@ -53,6 +53,19 @@ Resources:
       ClientName: SmartEmployeeWebClient
       UserPoolId: !Ref EmployeeUserPool
       GenerateSecret: false
+      CallbackURLs:
+        - "https://ubiquitous-fishstick-pj97pwrqj44jf6qxp-5173.app.github.dev/"
+      LogoutURLs:
+        - "https://ubiquitous-fishstick-pj97pwrqj44jf6qxp-5173.app.github.dev/"
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
       ExplicitAuthFlows:
         - ALLOW_USER_PASSWORD_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
@@ -119,13 +132,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EmployeeOnboardingTable
-        - Statement:
+        - Version: "2012-10-17"
+          Statement:
             - Effect: Allow
               Action:
                 - cognito-idp:AdminCreateUser
                 - cognito-idp:AdminAddUserToGroup
                 - cognito-idp:AdminGetUser
               Resource: !GetAtt EmployeeUserPool.Arn
+            - Effect: Allow
+              Action: states:StartExecution
+              Resource: !Sub "arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:OnboardingStateMachine"
       Events:
         SubmitApi:
           Type: Api
