@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { ArrowRight, KeyRound, Lock, LogIn, Mail, ShieldCheck, UserCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { signInCognito } from "../services/auth";
 
 function LoginPage({ onLoginSuccess }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [clientId, setClientId] = useState(
@@ -26,9 +28,9 @@ function LoginPage({ onLoginSuccess }) {
 
       // Role-based routing
       if (result.user.role === "HRAdmin" || result.user.groups.includes("HRAdmins")) {
-        window.location.hash = "/admin";
+        navigate("/admin");
       } else {
-        window.location.hash = "/progress";
+        navigate("/progress");
       }
     } catch (err) {
       setError(err.message || "Failed to authenticate with Amazon Cognito");

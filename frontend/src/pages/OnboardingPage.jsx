@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -23,6 +24,7 @@ const initialForm = {
 };
 
 function OnboardingPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -87,7 +89,7 @@ function OnboardingPage() {
     className="secondary-button"
     type="button"
     onClick={() => {
-      window.location.hash = "/documents";
+      navigate("/documents");
     }}
   >
     Upload documents
@@ -97,7 +99,7 @@ function OnboardingPage() {
     className="primary-button"
     type="button"
     onClick={() => {
-      window.location.hash = "/login";
+      navigate("/login");
     }}
   >
     Sign In with Cognito

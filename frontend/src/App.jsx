@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { HashRouter, NavLink, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import {
   Clock3,
   Files,
@@ -134,6 +134,7 @@ function Navigation({ user, onSignOut }) {
 
 function App() {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setUser(getCurrentAuthUser());
@@ -142,11 +143,11 @@ function App() {
   const handleSignOut = () => {
     signOutCognito();
     setUser(null);
-    window.location.hash = "/login";
+    navigate("/login");
   };
 
   return (
-    <HashRouter>
+    <>
       <Navigation user={user} onSignOut={handleSignOut} />
 
       <Routes>
@@ -155,9 +156,18 @@ function App() {
         <Route path="/documents" element={<DocumentUploadPage />} />
         <Route path="/progress" element={<EmployeeProgressPage />} />
         <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </HashRouter>
+    </>
   );
 }
 
-export default App;
+function AppRouter() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
+
+export default AppRouter;
