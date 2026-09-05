@@ -265,7 +265,7 @@ exports.handler = async (event) => {
                     employeeId,
 
                 execution_arn:
-                    execution.executionArn
+                    executionArn
             })
         };
 

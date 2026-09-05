@@ -1,0 +1,5 @@
+{
+  "body": "{\"full_name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"department\": \"Engineering\", \"role\": \"Software Engineer\", \"phone\": \"+1234567890\", \"manager_id\": \"jane_smith\", \"joining_date\": \"2026-09-01T09:00:00Z\", \"employment_type\": \"FTE\"}",
+  "httpMethod": "POST",
+  "path": "/submit"
+}
