@@ -17,7 +17,7 @@ const {
 } = require('@aws-sdk/client-cognito-identity-provider');
 
 const { marshall } = require('@aws-sdk/util-dynamodb');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 const dynamodb = new DynamoDBClient({});
 const sfn = new SFNClient({});
@@ -63,7 +63,7 @@ exports.handler = async (event) => {
         }
 
         // Generate employee ID
-        const employeeId = uuidv4();
+        const employeeId = crypto.randomUUID();
 
         const timestamp = new Date().toISOString();
 
